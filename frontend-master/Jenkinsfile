@@ -1,0 +1,29 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Build') {
+            steps {
+                echo 'Building..'
+                sh 'npm install'
+            }
+        }
+        stage('Test') {
+            steps {
+                echo 'Testing..'
+            }
+        }
+        stage('Deploy') {
+            steps {
+                echo 'Deploying....'
+                script {
+                   if (env.GIT_BRANCH == 'origin/master') {
+                       sh 'bash scripts/deploy.sh'
+                   } else {
+                       sh 'bash scripts/deploy_test.sh'
+                   }
+                }
+            }
+        }
+    }
+}

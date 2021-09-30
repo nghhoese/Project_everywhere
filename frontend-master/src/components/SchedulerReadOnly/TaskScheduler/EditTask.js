@@ -1,0 +1,111 @@
+import { useState, useEffect } from 'react';
+
+import { makeStyles } from '@material-ui/core/styles';
+import Button from '@material-ui/core/Button';
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogTitle from '@material-ui/core/DialogTitle';
+import useMediaQuery from '@material-ui/core/useMediaQuery';
+import { useTheme } from '@material-ui/core/styles';
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemText from '@material-ui/core/ListItemText';
+import TextField from '@material-ui/core/TextField';
+import MenuItem from '@material-ui/core/MenuItem';
+import Select from '@material-ui/core/Select';
+import { KeyboardDatePicker, MuiPickersUtilsProvider } from '@material-ui/pickers';
+import DateFnsUtils from '@date-io/date-fns';
+import moment from 'moment';
+
+const useStyles = makeStyles((theme) => ({
+  container: {
+    display: 'flex',
+    flexWrap: 'wrap',
+  },
+  textField: {
+    marginLeft: theme.spacing(1),
+    marginRight: theme.spacing(1),
+    width: 100,
+  },
+}));
+
+export default function EditTask({ editingTask, setEditingTask, changeTask }) {
+  const theme = useTheme();
+  const fullScreen = useMediaQuery(theme.breakpoints.down('xs'));
+  const classes = useStyles();
+  const [time, setTime] = useState("13:00");
+  const [selectedDate, setSelectedDate] = useState(new Date());
+
+  const handleClose = () => {
+    setEditingTask(null);
+  };
+
+  const handleDateChange = (date) => {
+    setSelectedDate(date);
+  };
+
+  const editTask = () => {
+    changeTask(selectedDate, time);
+  }
+
+  useEffect(() => {
+    if(editingTask) {
+      let date = moment(editingTask.active_since);
+      setSelectedDate(date);
+      setTime(date.format("HH:mm"));
+    }
+  }, [editingTask])
+
+  return (
+    <div>
+      <Dialog
+        fullScreen={fullScreen}
+        open={Boolean(editingTask)}
+        onClose={handleClose}
+        aria-labelledby="responsive-dialog-title"
+      >
+        <DialogTitle id="responsive-dialog-title">Wijzig taak
+          <form noValidate>
+            <MuiPickersUtilsProvider utils={DateFnsUtils}>
+              <KeyboardDatePicker
+                disableToolbar
+                variant="inline"
+                format="dd/MM/yyyy"
+                id="date-picker-inline"
+                label="Date picker inline"
+                value={selectedDate}
+                onChange={handleDateChange}
+                KeyboardButtonProps={{
+                  'aria-label': 'change date',
+                }}
+              />
+            </MuiPickersUtilsProvider>
+            <TextField
+              id="time"
+              label="Tijd"
+              type="time"
+              value={time}
+              className={classes.textField}
+              onChange={(e) => setTime(e.target.value)}
+              InputLabelProps={{
+                shrink: true,
+              }}
+              inputProps={{
+                step: 300, // 5 min
+              }}
+            />
+          </form>
+        </DialogTitle>
+        <DialogActions>
+          <Button onClick={handleClose} color="primary">
+            Annuleer
+          </Button>
+          <Button onClick={() => editTask()} color="primary">
+            Wijzig
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </div>
+  )
+}
